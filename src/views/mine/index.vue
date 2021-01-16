@@ -1,6 +1,6 @@
 <template>
     <div id="main">
-        <Header title="我的鱼生"></Header>
+        <heoder title="我的鱼生"></heoder>
         <div id="conten">
           <router-view></router-view>
         </div>
@@ -9,13 +9,13 @@
 </template>
 
 <script>
-import Header from '@/components/header'
+import heoder from '@/components/heoder'
 import tabbar from '@/components/tabbar'
 
 export default {
   name: 'mine',
   components: {
-    Header,
+    heoder,
     tabbar
   }
 }

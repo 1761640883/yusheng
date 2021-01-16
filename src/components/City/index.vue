@@ -4,80 +4,21 @@
             <div class="city_hot">
                 <h2>热门城市</h2>
                 <ul class="clearfix">
-                    <li>上海</li>
-                    <li>北京</li>
-                    <li>上海</li>
-                    <li>北京</li>
-                    <li>上海</li>
-                    <li>北京</li>
-                    <li>上海</li>
-                    <li>北京</li>
+                    <li v-for="data in hotCity" :key="data.cityId">{{data.name}}</li>
                 </ul>
             </div>
-            <div class="city_sort">
-                <div>
-                    <h2>A</h2>
+            <div class="city_sort" ref="city_sort">
+                <div v-for="data in datalist" :key="data.index">
+                    <h2>{{data.index}}</h2>
                     <ul>
-                        <li>阿拉善盟</li>
-                        <li>鞍山</li>
-                        <li>安庆</li>
-                        <li>安阳</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>B</h2>
-                    <ul>
-                        <li>北京</li>
-                        <li>保定</li>
-                        <li>蚌埠</li>
-                        <li>包头</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>A</h2>
-                    <ul>
-                        <li>阿拉善盟</li>
-                        <li>鞍山</li>
-                        <li>安庆</li>
-                        <li>安阳</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>B</h2>
-                    <ul>
-                        <li>北京</li>
-                        <li>保定</li>
-                        <li>蚌埠</li>
-                        <li>包头</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>A</h2>
-                    <ul>
-                        <li>阿拉善盟</li>
-                        <li>鞍山</li>
-                        <li>安庆</li>
-                        <li>安阳</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2>B</h2>
-                    <ul>
-                        <li>北京</li>
-                        <li>保定</li>
-                        <li>蚌埠</li>
-                        <li>包头</li>
+                        <li v-for="city in data.list" :key="city.cityId">{{city.name}}</li>
                     </ul>
                 </div>
             </div>
         </div>
         <div class="city_index">
             <ul>
-                <li>A</li>
-                <li>B</li>
-                <li>C</li>
-                <li>D</li>
-                <li>E</li>
+                <li v-for="(data, index) in datalist" :key="data.index" @click="handleToIndex(index)">{{data.index}}</li>
             </ul>
         </div>
     </div>
@@ -85,7 +26,60 @@
 
 <script>
 export default {
-  name: 'city'
+  name: 'city',
+  data () {
+    return {
+      datalist: [],
+      hotCity: []
+    }
+  },
+  methods: {
+    formatCityList (data) {
+      var index = []
+      for (var i = 65; i < 91; i++) {
+        index.push(String.fromCharCode(i))
+      }
+      // console.log(index)
+      var citylist = []
+      // [{index: A,list:{cityId: 110100, name: "北京", pinyin: "beijing", isHot: 1}}]
+      for (var j = 0; j < index.length; j++) {
+        var listArr = data.filter(item => item.pinyin.substr(0, 1) === index[j].toLowerCase())
+        // console.log(listArr)
+        if (listArr.length !== 0) {
+          citylist.push({ index: index[j], list: listArr })
+        }
+      }
+      console.log(citylist)
+      return citylist
+    },
+    formHotCity (data) {
+      var HotCity = data.filter(item => item.isHot === 1)
+      return HotCity
+    },
+    handleToIndex (index) {
+      var h2 = this.$refs.city_sort.getElementsByTagName('h2')
+      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+    }
+  },
+  mounted () {
+    this.axios({
+      url: 'https://m.maizuo.com/gateway?k=1745127',
+      headers: {
+        'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105"}',
+        'X-Host': 'mall.film-ticket.city.list'
+      }
+    }).then(res => {
+      // console.log(res.data)
+      var msg = res.data.msg
+      if (msg === 'ok') {
+        var data = res.data.data.cities
+        this.datalist = this.formatCityList(data)
+        this.hotCity = this.formHotCity(data)
+        // console.log(data)
+        // console.log(this.hotCity)
+      }
+    })
+  }
 }
 </script>
 

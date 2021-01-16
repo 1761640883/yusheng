@@ -3,28 +3,23 @@
         <div class="search_input">
             <div class="search_input_wrapper">
                 <i class="iconfont icon-sousuo"></i>
-                <input type="text">
+                <input type="text" v-model="mySearch"><!-- v-model：获取该表单元素的value，需要在data中给他一个变量 -->
             </div>
         </div>
         <div class="search_result">
             <h3>电影/电视剧/综艺</h3>
             <ul>
-                <li>
-                    <div class="img"><img src="/images/movie_1.jpg"></div>
+                <li v-for="data in movieList" :key="data.id">
+                    <div class="img"><img :src="data.img.replace('w.h', '128.180')"></div>
                     <div class="info">
-                        <p><span>无名之辈</span><span>8.5</span></p>
-                        <p>A Cool Fish</p>
-                        <p>剧情,喜剧,犯罪</p>
-                        <p>2018-11-16</p>
-                    </div>
-                </li>
-                <li>
-                    <div class="img"><img src="/images/movie_1.jpg"></div>
-                    <div class="info">
-                        <p><span>无名之辈</span><span>8.5</span></p>
-                        <p>A Cool Fish</p>
-                        <p>剧情,喜剧,犯罪</p>
-                        <p>2018-11-16</p>
+                        <p>
+                          <span>{{data.nm}}</span>
+                          <span v-if="data.sc">{{data.sc}}</span>
+                          <span v-else>暂无评分</span>
+                        </p>
+                        <p>{{data.enm}}</p>
+                        <p>{{data.cat}}</p>
+                        <p>{{data.rt}}</p>
                     </div>
                 </li>
             </ul>
@@ -34,7 +29,46 @@
 
 <script>
 export default {
-
+  name: 'Search',
+  data () {
+    return {
+      mySearch: '',
+      movieList: []
+    }
+  },
+  methods: {
+    cancelRequest () { // axios防抖动定义的函数（需要复制）
+      if (typeof this.source === 'function') {
+        this.source('终止请求')
+      }
+    }
+  },
+  watch: { // watch是vue内部提供的一个用于侦听功能的更通用的方法，其用来响应数据的变化，通过特定的数据变化驱动一些操作。
+    mySearch (newVal) { // mySearch是会发生数据变化的值，这里是v-model="mySearch"中的mySearch（也就是搜索框的value的变化）（newVal是默认带的参数，为input标签的value）
+      // console.log(newVal)
+      var that = this// axios防抖动（从这里开始复制）
+      this.cancelRequest()
+      if (newVal === '') { // 标记a（这里是自定义的开始）
+        this.movieList = ''
+      } else {
+        this.axios.get(`/ajax/search?kw=${newVal}&cityId=1&stype=-1`, { // 但是这个函数实参不是自定义的，需要复制（开始）
+          cancelToken: new this.axios.CancelToken(function (c) {
+            that.source = c
+          })// 但是这个函数实参不是自定义的，需要复制（结束）
+        }).then(res => {
+          this.movieList = res.data.movies.list
+          console.log(this.movieList)// 标记a（这里是自定义的结束）
+        }).catch((err) => { // catch不是自定义
+          if (this.axios.isCancel(err)) {
+            console.log('Rquest canceled', err.message) // 请求如果被取消，这里是返回取消的message
+          } else {
+            // handle error
+            console.log(err)
+          }
+        })
+      }// axios防抖动（这里结束）
+    }
+  }
 }
 </script>
 

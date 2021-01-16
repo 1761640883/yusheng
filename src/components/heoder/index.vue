@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'header', // name是为了方便在浏览器中的vue插件看到当前组件的名字
+  name: 'heoder', // name是为了方便在浏览器中的vue插件看到当前组件的名字
   props: {
     title: {
       type: String,
