@@ -1,6 +1,6 @@
 <template>
     <div id="main">
-        <Header title="鱼生影院"></Header>
+        <heoder title="鱼生影院"></heoder>
         <div id="content">
           <div class="cinema_menu">
             <div class="city_switch">
@@ -22,13 +22,13 @@
 </template>
 
 <script>
-import Header from '@/components/header'
+import heoder from '@/components/heoder'
 import tabbar from '@/components/tabbar'
 
 export default {
   name: 'cinema',
   components: {
-    Header,
+    heoder,
     tabbar
   }
 }

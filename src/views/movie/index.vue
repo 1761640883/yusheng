@@ -1,6 +1,6 @@
 <template>
     <div id="main">
-      <Header title="鱼生电影"></Header>
+      <heoder title="鱼生电影"></heoder>
       <div id="content">
         <div class="movie_menu">
           <router-link class="city_name" tag="div" to="/movie/city">
@@ -23,13 +23,13 @@
 </template>
 
 <script>
-import Header from '@/components/header'
+import heoder from '@/components/heoder'
 import tabbar from '@/components/tabbar'
 
 export default {
   name: 'movie',
   components: {
-    Header,
+    heoder,
     tabbar
   }
 }

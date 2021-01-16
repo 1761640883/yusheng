@@ -2,6 +2,7 @@
 ul,li{ list-style: none;}
 img{ display: block;}
 html,body{ height:100%;}
+a{text-decoration: none;color:#333333}
 .clearfix:after{ content:""; display: block; clear:both;}
 
 #main{ height: 100%; display: flex; flex-direction:column;}
