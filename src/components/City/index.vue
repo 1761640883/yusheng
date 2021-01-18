@@ -4,14 +4,14 @@
             <div class="city_hot">
                 <h2>热门城市</h2>
                 <ul class="clearfix">
-                    <li v-for="data in hotCity" :key="data.cityId">{{data.name}}</li>
+                    <li v-for="data in hotCity" :key="data.cityId" @click="handToCity(data.name, data.cityId)">{{data.name}}</li>
                 </ul>
             </div>
             <div class="city_sort" ref="city_sort">
                 <div v-for="data in datalist" :key="data.index">
                     <h2>{{data.index}}</h2>
                     <ul>
-                        <li v-for="city in data.list" :key="city.cityId">{{city.name}}</li>
+                        <li v-for="city in data.list" :key="city.cityId" @click="handToCity(city.name, city.cityId)">{{city.name}}</li>
                     </ul>
                 </div>
             </div>
@@ -59,26 +59,44 @@ export default {
     handleToIndex (index) {
       var h2 = this.$refs.city_sort.getElementsByTagName('h2')
       this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+    },
+    handToCity (nm, id) {
+      // console.log('sb')
+      this.$store.commit('city/CITY_INFO', { nm, id })
+      this.$router.push('/movie/nowplaying')
+      localStorage.setItem('cityId', id)
+      localStorage.setItem('cityName', nm)
     }
   },
   mounted () {
-    this.axios({
-      url: 'https://m.maizuo.com/gateway?k=1745127',
-      headers: {
-        'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105"}',
-        'X-Host': 'mall.film-ticket.city.list'
-      }
-    }).then(res => {
-      // console.log(res.data)
-      var msg = res.data.msg
-      if (msg === 'ok') {
-        var data = res.data.data.cities
-        this.datalist = this.formatCityList(data)
-        this.hotCity = this.formHotCity(data)
-        // console.log(data)
-        // console.log(this.hotCity)
-      }
-    })
+    var cityList = window.localStorage.getItem('cityList')
+    var hotCity = window.localStorage.getItem('hotCity')
+
+    if (cityList && hotCity) {
+      this.datalist = JSON.parse(cityList)
+      this.hotCity = JSON.parse(hotCity)
+      console.log('从本地获取的数据')
+    } else {
+      this.axios({
+        url: 'https://m.maizuo.com/gateway?k=1745127',
+        headers: {
+          'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105"}',
+          'X-Host': 'mall.film-ticket.city.list'
+        }
+      }).then(res => {
+        console.log(res.data)
+        var msg = res.data.msg
+        if (msg === 'ok') {
+          var data = res.data.data.cities
+          this.datalist = this.formatCityList(data)
+          this.hotCity = this.formHotCity(data)
+          // console.log(data)
+          // console.log(this.hotCity)
+          window.localStorage.setItem('cityList', JSON.stringify(this.datalist))//  JSON.stringify() 方法将 JavaScript 对象转换为字符串。
+          window.localStorage.setItem('hotCity', JSON.stringify(this.hotCity))
+        }
+      })
+    }
   }
 }
 </script>

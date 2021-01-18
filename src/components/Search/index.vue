@@ -13,11 +13,11 @@
                     <div class="img"><img :src="data.img.replace('w.h', '128.180')"></div>
                     <div class="info">
                         <p>
-                          <span>{{data.nm}}</span>
+                          <span class="title">{{data.nm}}</span>
                           <span v-if="data.sc">{{data.sc}}</span>
                           <span v-else>暂无评分</span>
                         </p>
-                        <p>{{data.enm}}</p>
+                        <p class="title">{{data.enm}}</p>
                         <p>{{data.cat}}</p>
                         <p>{{data.rt}}</p>
                     </div>
@@ -47,11 +47,13 @@ export default {
     mySearch (newVal) { // mySearch是会发生数据变化的值，这里是v-model="mySearch"中的mySearch（也就是搜索框的value的变化）（newVal是默认带的参数，为input标签的value）
       // console.log(newVal)
       var that = this// axios防抖动（从这里开始复制）
+      var cityId = parseInt(this.$store.state.city.id / 100000)
+      console.log(cityId)
       this.cancelRequest()
       if (newVal === '') { // 标记a（这里是自定义的开始）
         this.movieList = ''
       } else {
-        this.axios.get(`/ajax/search?kw=${newVal}&cityId=1&stype=-1`, { // 但是这个函数实参不是自定义的，需要复制（开始）
+        this.axios.get(`/ajax/search?kw=${newVal}&cityId=${cityId}&stype=-1`, { // 但是这个函数实参不是自定义的，需要复制（开始）
           cancelToken: new this.axios.CancelToken(function (c) {
             that.source = c
           })// 但是这个函数实参不是自定义的，需要复制（结束）
@@ -83,7 +85,9 @@ export default {
 .search_body .search_result .img{ width: 60px; float:left; }
 .search_body .search_result .img img{ width: 100%; }
 .search_body .search_result .info{ float:left; margin-left: 15px; flex:1;}
-.search_body .search_result .info p{ height: 22px; display: flex; line-height: 22px; font-size: 12px;}
+.search_body .search_result .info p{ height: 22px; line-height: 22px; font-size: 12px;}
+.search_body .search_result .info p:nth-of-type(1){display: flex;justify-content: space-between;}
 .search_body .search_result .info p:nth-of-type(1) span:nth-of-type(1){ font-size: 18px; flex:1; }
 .search_body .search_result .info p:nth-of-type(1) span:nth-of-type(2){ font-size: 16px; color:#fc7103;}
+.search_body .info .title{max-width: 200px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;}
 </style>

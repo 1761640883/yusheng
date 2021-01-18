@@ -24,12 +24,18 @@ export default {
   name: 'Clist',
   data () {
     return {
-      datalist: []
+      datalist: [],
+      prevCityId: -1
     }
   },
-  mounted () {
+  activated () {
+    var cityId = this.$store.state.city.id
+    if (this.prevCityId === cityId) {
+      return
+    }
+    // console.log(123)
     this.axios({
-      url: 'https://m.maizuo.com/gateway?cityId=110100&ticketFlag=1&k=6578088',
+      url: `https://m.maizuo.com/gateway?cityId=${cityId}&ticketFlag=1&k=6578088`,
       headers: {
         'X-Client-Info': '{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105","bc":"110100"}',
         'X-Host': 'mall.film-ticket.cinema.list'
@@ -38,6 +44,7 @@ export default {
       if (res.data.msg === 'ok') {
         this.datalist = res.data.data.cinemas
         console.log(this.datalist)
+        this.prevCityId = cityId
       }
     })
   }
