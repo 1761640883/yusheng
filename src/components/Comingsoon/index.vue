@@ -1,6 +1,7 @@
 <template>
     <div class="movie_body">
-        <ul>
+      <loading v-if="isLoading"></loading>
+        <ul v-else>
             <li v-for="data in datalist" :key="data.id">
                 <div class="pic_show"><img :src="data.img.replace('w.h', '128.180')"></div>
                 <div class="info_list">
@@ -26,6 +27,7 @@
 
 <script>
 import Vue from 'vue'
+import BScroll from 'better-scroll'
 
 Vue.filter('versionReplace', (data) => {
   data = data.replace('v', '')
@@ -37,13 +39,30 @@ export default {
   name: 'Comingsoon',
   data () {
     return {
-      datalist: []
+      datalist: [],
+      isLoading: true,
+      prevCityId: -1
     }
   },
-  mounted () {
+  activated () {
+    var cityId = this.$store.state.city.id
+    if (this.prevCityId === cityId) {
+      return
+    }
+    this.isLoading = true
+    // console.log('123')
+
     this.axios.get('/ajax/comingList?ci=1&token=&limit=10&optimus_uuid=2329E2404B2611EB8159730124A21DCCC549973F69D54484BB80CF47A318031F&optimus_risk_level=71&optimus_code=10').then(res => {
       console.log(res.data.coming)
       this.datalist = res.data.coming
+      this.isLoading = false
+      this.prevCityId = cityId
+      this.$nextTick(() => {
+        /* eslint-disable no-new */
+        new BScroll('.movie_body', { // 这是另外一种引入方法，通过ref获取元素节点，官方文档是通过class引入这里引入的是'.movie_body'
+          click: true
+        })
+      })
     })
   }
 }
