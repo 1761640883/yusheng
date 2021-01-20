@@ -1,22 +1,23 @@
 <template>
     <div class="movie_body">
       <loading v-if="isLoding"></loading>
-      <ul v-else>
+      <ul v-else ref="myUl">
         <li class="pullDown">{{pullDownMsg}}</li>
-        <li @click="handaleToDetail" v-for="data in nowlist" :key="data.id">
-          <div class="pic_show"><img :src="data.img.replace('w.h', '128.180')"></div>
+        <li @click="handaleToDetail(data.filmId)" v-for="data in nowlist" :key="data.filmId">
+          <div class="pic_show"><img :src="data.poster"></div>
           <div class="info_list">
               <div class="title">
-                <h2>{{data.nm}}</h2>
-                <div v-if="data.version">{{data.version | versionReplace}}</div>
+                <h2>{{data.name}}</h2>
+                <div v-if="data.filmType.name">{{data.filmType.name}}</div>
               </div>
-              <p v-if="data.sc">观众评分 <span class="grade">{{data.sc}}</span></p>
+              <p v-if="data.grade">观众评分 <span class="grade">{{data.grade}}</span></p>
               <p v-else>观众评分：暂无评分</p>
-              <p v-if="data.star">主演: {{data.star}}</p>
+              <p v-if="data.actors">主演: <span v-for="(actorName, index) in data.actors" :key="index">{{actorName.name}},</span></p>
               <p v-else>暂无主演</p>
-              <p>{{data.showInfo}}</p>
+              <p v-if="data.category">{{data.category.replace(/\|/g, ' | ')}}</p>
+              <p v-else>暂时无法分类</p>
           </div>
-          <div class="btn_mall" v-if="data.globalReleased">
+          <div class="btn_mall" v-if="data.isPresale">
               购票
           </div>
           <div class="btn_pre" v-else>
@@ -45,12 +46,16 @@ export default {
       pullDownMsg: '',
       // pullUpMsg: '',
       isLoding: true,
-      prevCityId: -1
+      prevCityId: -1,
+      total: 0,
+      current: 1,
+      cityId: 0
     }
   },
   methods: {
-    handaleToDetail () {
-      console.log('sb')
+    handaleToDetail (id) {
+      this.$router.push(`/movie/detail/1/${id}`)// id主要是为了传参用的（需要在其他的组件相互配合，具体查看movie的route路径文件和vue组件文件）
+      // this.$router.push({ name: 'kerwindetail', params: { id: id } })// 这是另外一种动态路由写法（写法b）去route文件中找对应的写法
     }
 
     // 这个有用，但是公共组件出问题了
@@ -71,33 +76,34 @@ export default {
     //   }
     // }
   },
-  // mounted () {
-  //   console.log('12W')
-  // },
-  activated () {
-    // console.log('124')
 
-    var cityId = this.$store.state.city.id
-    if (this.prevCityId === cityId) {
+  activated () {
+    this.cityId = this.$store.state.city.id
+    if (this.prevCityId === this.cityId) {
       return
     }
     this.isLoding = true
-    // console.log('123')
-    this.axios.get('/ajax/movieOnInfoList?token=&optimus_uuid=2329E2404B2611EB8159730124A21DCCC549973F69D54484BB80CF47A318031F&optimus_risk_level=71&optimus_code=10').then(res => {
-      // console.log(res.data.movieList)
-      this.nowlist = res.data.movieList
+
+    this.axios({
+      url: `https://m.maizuo.com/gateway?cityId=${this.cityId}&pageNum=1&pageSize=10&type=1&k=7598523`,
+      headers: {
+        'X-Client-Info': `{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105","bc":"${this.cityId}"}`,
+        'X-Host': 'mall.film-ticket.film.list'
+      }
+    }).then(res => {
+      this.nowlist = res.data.data.films
+      this.total = res.data.data.total
+      console.log(this.total)
       this.isLoding = false
-      this.prevCityId = cityId
+      this.prevCityId = this.cityId
       // console.log(this.nowlist)
       this.$nextTick(() => { // vue提供的回调函数：在上面数据渲染完后，才会执行的回调函数 $nextTick()
-        /* eslint-disable no-new */
         var scroll = new BScroll('.movie_body', { // 这是另外一种引入方法，通过ref获取元素节点，官方文档是通过class引入这里引入的是'.movie_body'
           click: true,
           probeType: 1
         })
         scroll.on('scroll', (pos) => {
-          console.log('scroll')
-          console.log(pos)// pos（自带的实参，是滑动的对象，有x， y两个属性）
+          // console.log(pos)// pos（自带的实参，是滑动的对象，有x， y两个属性）
           if (pos.y > 10) {
             this.pullDownMsg = '正在更新中'
           }
@@ -105,24 +111,43 @@ export default {
         scroll.on('touchEnd', (pos) => {
           // console.log('touchend')
           if (pos.y > 30) {
-            this.axios.get('/ajax/movieOnInfoList?token=&optimus_uuid=2329E2404B2611EB8159730124A21DCCC549973F69D54484BB80CF47A318031F&optimus_risk_level=71&optimus_code=10').then(res => {
+            this.axios({
+              url: `https://m.maizuo.com/gateway?cityId=${this.cityId}&pageNum=1&pageSize=10&type=1&k=7598523`,
+              headers: {
+                'X-Client-Info': `{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105","bc":"${this.cityId}"}`,
+                'X-Host': 'mall.film-ticket.film.list'
+              }
+            }).then(res => {
+              console.log(this.cityId)
               this.pullDownMsg = '更新成功'
               setTimeout(() => {
-                this.nowlist = res.data.movieList
+                this.nowlist = res.data.data.films
+                this.total = res.data.total
+                this.current = 1
                 this.pullDownMsg = ''
+                scroll.refresh()
               }, 1000)
+            })
+          } else {
+            if (this.nowlist.length !== this.total) {
+              this.current++
+              this.axios({
+                url: `https://m.maizuo.com/gateway?cityId=${this.cityId}&pageNum=${this.current}&pageSize=10&type=1&k=1844767`,
+                headers: {
+                  'X-Client-Info': `{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105","bc":"${this.cityId}"}`,
+                  'X-Host': 'mall.film-ticket.film.list'
+                }
+              }).then((res) => {
+                this.nowlist = [...this.nowlist, ...res.data.data.films]
+              })
+            }
+            this.$nextTick(() => {
+              scroll.refresh()// 当内容发生变化时，要重新计算 BetterScroll，不然会导致滚动效果异常
             })
           }
         })
       })
     })
-  },
-  filters: {
-    versionReplace (data) {
-      data = data.replace('v', '')
-      data = data.replace('d', 'D')
-      return data
-    }
   }
 }
 </script>
@@ -137,7 +162,7 @@ export default {
     .movie_body .pic_show img{ width:100%;}
     .movie_body .info_list { margin-left: 10px; flex:1; position: relative;}
     .movie_body .info_list .title{display: flex;align-items: center;}
-    .movie_body .title div{height: 16px;background: #509fc9;color: white;line-height: 15px;text-align: center;font-size: 14px;border-radius: 3px;margin-left: 5px;padding: 0 3px;}
+    .movie_body .title div{height: 16px;background: #509fc9;color: white;line-height: 16px;text-align: center;font-size: 14px;border-radius: 3px;margin-left: 5px;padding: 0 3px;}
     .movie_body .info_list h2{ font-size: 17px; line-height: 24px; max-width:150px; overflow: hidden; white-space: nowrap; text-overflow:ellipsis;}
     .movie_body .info_list p{ font-size: 13px; color:#666; line-height: 22px; width:200px; overflow: hidden; white-space: nowrap; text-overflow:ellipsis;}
     .movie_body .info_list .grade{ font-weight: 700; color: #faaf00; font-size: 15px;}

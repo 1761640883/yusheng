@@ -1,39 +1,33 @@
 <template>
-    <div class="movie_body">
+    <div class="movie_body" ref="movie_body">
       <loading v-if="isLoading"></loading>
-        <ul v-else>
-            <li v-for="data in datalist" :key="data.id">
-                <div class="pic_show"><img :src="data.img.replace('w.h', '128.180')"></div>
-                <div class="info_list">
-                    <div class="title">
-                      <h2>{{data.nm}}</h2>
-                      <div v-if="data.version">{{data.version | versionReplace}}</div>
-                    </div>
-                    <p><span class="grade">{{data.wish}}</span>人想看</p>
-                    <p v-if="data.star">主演: {{data.star}}</p>
-                    <p v-else>暂无主演</p>
-                    <p>{{data.rt}}上映</p>
-                </div>
-                <div class="btn_pre" v-if="data.showst - 1">
-                    预售
-                </div>
-                <div class="btn_see" v-else>
-                    想看
-                </div>
-            </li>
-        </ul>
+      <ul v-else ref="myUl">
+          <li v-for="data in datalist" :key="data.filmId" @click="handaleToDetail(data.filmId)">
+              <div class="pic_show"><img :src="data.poster"></div>
+              <div class="info_list">
+                  <div class="title">
+                    <h2>{{data.name}}</h2>
+                    <div v-if="data.filmType.name">{{data.filmType.name}}</div>
+                  </div>
+                  <p><span class="grade">{{data.filmId}}</span>人想看</p>
+                  <p v-if="data.actors">主演: <span v-for="(actorsName, index) in data.actors" :key="index">{{actorsName.name}},</span></p>
+                  <p v-else>暂无主演</p>
+                  <p v-if="data.category">{{data.category.replace(/\|/g, ' | ')}}</p>
+                  <p v-else>暂时无法分类</p>
+              </div>
+              <div class="btn_pre" v-if="data.isPresale">
+                  预售
+              </div>
+              <div class="btn_see" v-else>
+                  想看
+              </div>
+          </li>
+      </ul>
     </div>
 </template>
 
 <script>
-import Vue from 'vue'
 import BScroll from 'better-scroll'
-
-Vue.filter('versionReplace', (data) => {
-  data = data.replace('v', '')
-  data = data.replace('d', 'D')
-  return data
-})
 
 export default {
   name: 'Comingsoon',
@@ -41,7 +35,14 @@ export default {
     return {
       datalist: [],
       isLoading: true,
-      prevCityId: -1
+      prevCityId: -1,
+      current: 1,
+      total: 0
+    }
+  },
+  methods: {
+    handaleToDetail (id) {
+      this.$router.push(`/movie/detail/2/${id}`)
     }
   },
   activated () {
@@ -52,15 +53,41 @@ export default {
     this.isLoading = true
     // console.log('123')
 
-    this.axios.get('/ajax/comingList?ci=1&token=&limit=10&optimus_uuid=2329E2404B2611EB8159730124A21DCCC549973F69D54484BB80CF47A318031F&optimus_risk_level=71&optimus_code=10').then(res => {
-      console.log(res.data.coming)
-      this.datalist = res.data.coming
+    this.axios({
+      url: `https://m.maizuo.com/gateway?cityId=${cityId}&pageNum=1&pageSize=10&type=2&k=2946394`,
+      headers: {
+        'X-Client-Info': `{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105","bc":"${cityId}"}`,
+        'X-Host': 'mall.film-ticket.film.list'
+      }
+    }).then(res => {
+      this.datalist = res.data.data.films
+      this.total = res.data.data.total
+      console.log(this.datalist)
       this.isLoading = false
       this.prevCityId = cityId
       this.$nextTick(() => {
-        /* eslint-disable no-new */
-        new BScroll('.movie_body', { // 这是另外一种引入方法，通过ref获取元素节点，官方文档是通过class引入这里引入的是'.movie_body'
-          click: true
+        var scroll = new BScroll(this.$refs.movie_body, { // 这是另外一种引入方法，通过ref获取元素节点，官方文档是通过class引入这里引入的是'.movie_body'
+          click: true,
+          probeType: 1
+        })
+        scroll.on('touchEnd', (pos) => {
+          if (pos.y < -30) {
+            if (this.datalist.length !== this.total) {
+              this.current++
+              this.axios({
+                url: `https://m.maizuo.com/gateway?cityId=${cityId}&pageNum=${this.current}&pageSize=10&type=2&k=3277277`,
+                headers: {
+                  'X-Client-Info': `{"a":"3000","ch":"1002","v":"5.0.4","e":"16095037913302396058927105","bc":"${cityId}"}`,
+                  'X-Host': 'mall.film-ticket.film.list'
+                }
+              }).then(res => {
+                this.datalist = [...this.datalist, ...res.data.data.films]
+              })
+            }
+            this.$nextTick(() => {
+              scroll.refresh()// 当内容发生变化时，要重新计算 BetterScroll，不然会导致滚动效果异常
+            })
+          }
         })
       })
     })

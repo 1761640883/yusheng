@@ -19,6 +19,7 @@
         </keep-alive>
       </div>
       <tabbar></tabbar>
+      <router-view name="detail"></router-view><!-- 如果不写name那么无法跳转，因为<router-view>每个页面只能显示一个，如果没有name指定，则默认跳转第一个 -->
     </div>
 </template>
 
