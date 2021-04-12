@@ -3,7 +3,7 @@
         <h2>{{title}}</h2>
         <p>{{content}}</p>
         <div>
-            <div @click="handleCancel">{{cancel}}</div>
+            <div @click="handleCancel" v-if="cancel">{{cancel}}</div>
             <div @click="handleOk">{{ok}}</div>
         </div>
     </div>

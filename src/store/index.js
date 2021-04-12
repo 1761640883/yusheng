@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import city from './city'
+import user from './user'
 
 Vue.use(Vuex)
 
@@ -12,6 +13,7 @@ export default new Vuex.Store({
   actions: {// 如果需要进行异步操作就启用这个，只进行同步操作就不需要。他会跟后端进行信息传递（actions也可以做同步）
   },
   modules: {
-    city// 子组件查看city文件夹
+    city, // 子组件查看city文件夹
+    user
   }
 })

@@ -7,8 +7,20 @@ export default {
       component: () => import('@/components/Login')
     },
     {
+      path: 'center',
+      component: () => import('@/views/mine/center.vue')
+    },
+    {
+      path: 'register',
+      component: () => import('@/components/Register')
+    },
+    {
+      path: 'findPassword',
+      component: () => import('@/components/FindPassword')
+    },
+    {
       path: '',
-      redirect: 'login'
+      redirect: 'center'
     }
   ]
 }

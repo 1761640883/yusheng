@@ -48,7 +48,6 @@ export default {
       // console.log(newVal)
       var that = this// axios防抖动（从这里开始复制）
       var cityId = parseInt(this.$store.state.city.id / 100000)
-      console.log(cityId)
       this.cancelRequest()
       if (newVal === '') { // 标记a（这里是自定义的开始）
         this.movieList = ''
@@ -67,8 +66,8 @@ export default {
             // handle error
             console.log(err)
           }
-        })
-      }// axios防抖动（这里结束）
+        })// axios防抖动（这里结束）
+      }
     }
   }
 }

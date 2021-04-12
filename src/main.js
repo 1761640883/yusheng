@@ -15,9 +15,13 @@ import axios from 'axios'// 还需要在下面写Vue.prototype.axios = axios（�
 // import Scroller from '@/components/Scroller'
 // Vue.component('Scroller', Scroller)
 
-import loading from '@/components/loading'
-Vue.component('loading', loading)
+import loading from '@/components/loading'// 还需要在下面写Vue.component('loading', loading)（因为规范的原因被移下去了）
 
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+Vue.use(ElementUI)
+
+Vue.component('loading', loading)
 Vue.prototype.axios = axios
 
 Vue.config.productionTip = false
